@@ -325,7 +325,7 @@ public:
 				 double x,
 				 double y,
 				 double z,
-				 PointType t = UNDEFINED_POINT):
+				 PointType t [[maybe_unused]] = UNDEFINED_POINT):
 		m_p(g)
 	{
 		set(x,y,z);

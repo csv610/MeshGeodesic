@@ -50,7 +50,7 @@ private:
 	void build_adjacencies();		//build internal structure of the mesh
 	bool verify();					//verifies connectivity of the mesh and prints some debug info
 
-	typedef void* void_pointer;
+	using void_pointer = void*;
 	void_pointer allocate_pointers(unsigned n) 
 	{
 		return m_pointer_allocator.allocate(n); 
@@ -501,7 +501,7 @@ inline void fill_surface_point_structure(geodesic::SurfacePoint* point,
 
 inline void fill_surface_point_double(geodesic::SurfacePoint* point, 
 									  double* data, 
-									  long mesh_id)
+									  long mesh_id [[maybe_unused]])
 {
 	data[0] = point->x();
 	data[1] = point->y();

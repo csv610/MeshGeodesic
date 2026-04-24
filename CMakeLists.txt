@@ -4,6 +4,12 @@ project(Geodesic CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+elseif(MSVC)
+  add_compile_options(/W4)
+ endif()
+
 # Source files
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
@@ -13,6 +19,7 @@ include_directories(${SOURCE_DIR})
 # Executables
 add_executable(example0 app/example0.cpp)
 add_executable(example1 app/example1.cpp)
+add_executable(farthest_point_sampling app/farthest_point_sampling.cpp)
 
 # Unit Tests
 enable_testing()

@@ -9,7 +9,7 @@
 #include "geodesic_algorithm_subdivision.h"
 #include "geodesic_algorithm_exact.h"
 
-int main(int argc, char **argv) 
+int main(int /* argc */, char** /* argv */) 
 {
 	std::vector<double> points;	
 	std::vector<unsigned> faces;
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
 	geodesic::GeodesicAlgorithmExact exact_algorithm(&mesh);		//exact algorithm
 	geodesic::GeodesicAlgorithmDijkstra dijkstra_algorithm(&mesh);		//simplest approximate algorithm: path only allowed on the edges of the mesh
-	unsigned const subdivision_level = 3;										//three additional vertices per every edge in subdivision algorithm
+	
 	geodesic::GeodesicAlgorithmSubdivision subdivision_algorithm(&mesh,2);	//with subdivision_level=0 this algorithm becomes Dijkstra, with subdivision_level->infinity it becomes exact
 
 	std::vector<geodesic::GeodesicAlgorithmBase* > all_algorithms;		//for simplicity, store all possible geodesic algorithms here
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
 		//------------------first task: compute the pathes to the targets----
 		std::vector<geodesic::SurfacePoint> path;
-		for(int i=0; i<targets.size(); ++i)
+		for(std::size_t i=0; i<targets.size(); ++i)
 		{
 			algorithm->trace_back(targets[i], path);
 			print_info_about_path(path);
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
 		//------------------second task: for each source, find the furthest vertex that it covers ----
 		std::vector<double> max_distance(sources.size(), 0.0);		//distance to the furthest vertex that is covered by the given source
-		for(int i=0; i<mesh.vertices().size(); ++i)
+		for(std::size_t i=0; i<mesh.vertices().size(); ++i)
 		{
 			geodesic::SurfacePoint p(&mesh.vertices()[i]);
 			double distance;
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 		}
 
 		std::cout << std::endl;
-		for(int i=0; i<max_distance.size(); ++i)
+		for(std::size_t i=0; i<max_distance.size(); ++i)
 		{
 			std::cout << "distance to the furthest vertex that is covered by source " << i 
 					<< " is " << max_distance[i] 

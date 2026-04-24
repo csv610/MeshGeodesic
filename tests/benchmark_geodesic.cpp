@@ -8,17 +8,17 @@
 #include "geodesic_algorithm_dijkstra.h"
 #include "geodesic_algorithm_subdivision.h"
 
-using namespace geodesic;
+
 
 void run_benchmark(const std::string& mesh_file) {
     std::vector<double> points;
     std::vector<unsigned> faces;
-    if (!read_mesh_from_file(mesh_file.c_str(), points, faces)) {
+    if (!geodesic::read_mesh_from_file(mesh_file.c_str(), points, faces)) {
         std::cerr << "Failed to read mesh: " << mesh_file << std::endl;
         return;
     }
 
-    Mesh mesh;
+    geodesic::Mesh mesh;
     mesh.initialize_mesh_data(points, faces);
 
     std::cout << "Mesh: " << mesh_file << std::endl;
@@ -28,12 +28,12 @@ void run_benchmark(const std::string& mesh_file) {
     std::cout << "----------------------------------------------------------" << std::endl;
 
     // Set up sources (10 random-ish vertices)
-    std::vector<SurfacePoint> sources;
+    std::vector<geodesic::SurfacePoint> sources;
     for (int i = 0; i < 10; ++i) {
-        sources.push_back(SurfacePoint(&mesh.vertices()[(i * 137) % mesh.vertices().size()]));
+        sources.push_back(geodesic::SurfacePoint(&mesh.vertices()[(i * 137) % mesh.vertices().size()]));
     }
 
-    auto benchmark = [&](const std::string& name, GeodesicAlgorithmBase& algo) {
+    auto benchmark = [&](const std::string& name, geodesic::GeodesicAlgorithmBase& algo) {
         auto start = std::chrono::high_resolution_clock::now();
         algo.propagate(sources);
         auto end = std::chrono::high_resolution_clock::now();
@@ -41,19 +41,19 @@ void run_benchmark(const std::string& mesh_file) {
         std::cout << std::left << std::setw(25) << name << std::setw(20) << duration << std::endl;
     };
 
-    GeodesicAlgorithmExact exact(&mesh);
+    geodesic::GeodesicAlgorithmExact exact(&mesh);
     benchmark("Exact", exact);
 
-    GeodesicAlgorithmDijkstra dijkstra(&mesh);
+    geodesic::GeodesicAlgorithmDijkstra dijkstra(&mesh);
     benchmark("Dijkstra", dijkstra);
 
-    GeodesicAlgorithmSubdivision sub1(&mesh, 1);
+    geodesic::GeodesicAlgorithmSubdivision sub1(&mesh, 1);
     benchmark("Subdivision (level 1)", sub1);
 
-    GeodesicAlgorithmSubdivision sub3(&mesh, 3);
+    geodesic::GeodesicAlgorithmSubdivision sub3(&mesh, 3);
     benchmark("Subdivision (level 3)", sub3);
 
-    GeodesicAlgorithmSubdivision sub5(&mesh, 5);
+    geodesic::GeodesicAlgorithmSubdivision sub5(&mesh, 5);
     benchmark("Subdivision (level 5)", sub5);
 
     std::cout << "----------------------------------------------------------" << std::endl;

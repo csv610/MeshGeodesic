@@ -46,7 +46,6 @@ GEODESIC_DLL_IMPORT long distance_and_source(long algorithm_id,		//quickly find 
 {
 	geodesic::SurfacePoint point;
 	geodesic::GeodesicAlgorithmBase* algorithm = algorithms[algorithm_id].get();
-	std::size_t mesh_id = find_mesh_id(algorithm->mesh());
 	geodesic::fill_surface_point_structure(&point, 
 										   destination, 
 										   algorithm->mesh());
@@ -119,7 +118,7 @@ GEODESIC_DLL_IMPORT void propagate(long algorithm_id,
 	std::vector<geodesic::SurfacePoint> sources(num_sources);
 
 	geodesic::Mesh* mesh = algorithms[algorithm_id]->mesh();
-	for(std::size_t i=0; i<num_sources; ++i)
+	for(std::size_t i=0; i<static_cast<std::size_t>(num_sources); ++i)
 	{
 		geodesic::fill_surface_point_structure(&sources[i], 
 												source_points + 5*i, 
@@ -127,7 +126,7 @@ GEODESIC_DLL_IMPORT void propagate(long algorithm_id,
 	}
 
 	std::vector<geodesic::SurfacePoint> stop(num_stop_points);
-	for(std::size_t i=0; i<num_stop_points; ++i)
+	for(std::size_t i=0; i<static_cast<std::size_t>(num_stop_points); ++i)
 	{
 		geodesic::fill_surface_point_structure(&stop[i], 
 												stop_points + 5*i, 
@@ -160,7 +159,7 @@ GEODESIC_DLL_IMPORT long new_mesh(long num_points,
 	output_buffer.allocate<double>(*num_edges * 4);
 	*edges = output_buffer.get<double>();
 	
-	for(std::size_t i=0; i<*num_edges; ++i)
+	for(std::size_t i=0; i<static_cast<std::size_t>(*num_edges); ++i)
 	{
 		geodesic::Edge& edge = new_mesh->edges()[i];
 		double* buffer = *edges + 4*i;
@@ -214,7 +213,7 @@ GEODESIC_DLL_IMPORT long new_algorithm(long mesh_id,
 
 GEODESIC_DLL_IMPORT void delete_mesh(long id)		//delete mesh and all related algorithms
 {
-	assert(id < meshes.size());
+	assert(static_cast<std::size_t>(id) < meshes.size());
 
 	geodesic::Mesh* mesh = meshes[id].get();
 	for(std::size_t i=0; i<algorithms.size(); ++i)
@@ -231,7 +230,7 @@ GEODESIC_DLL_IMPORT void delete_mesh(long id)		//delete mesh and all related alg
 
 GEODESIC_DLL_IMPORT void delete_algorithm(long id)
 {
-	if(id < algorithms.size())
+	if(static_cast<std::size_t>(id) < algorithms.size())
 	{
 		algorithms[id] = algorithm_shared_pointer();
 	}

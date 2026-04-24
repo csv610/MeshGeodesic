@@ -19,15 +19,15 @@ public:
 	template <class Pointer>
 	SubdivisionNode(Pointer p):
 		SurfacePoint(p),
-		m_previous(NULL),
-		m_distance(0.0)
+		m_distance(0.0),
+		m_previous(NULL)
 	{};
 
 	template <class Pointer, class Parameter>
 	SubdivisionNode(Pointer p, Parameter param):
 		SurfacePoint(p, param),
-		m_previous(NULL),
-		m_distance(0.0)
+		m_distance(0.0),
+		m_previous(NULL)
 	{};
 
 	~SubdivisionNode(){};
