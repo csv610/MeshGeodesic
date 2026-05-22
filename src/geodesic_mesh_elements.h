@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cmath>
 #include <algorithm>
+#include <stdexcept>
 
 namespace geodesic{
 
@@ -202,8 +203,7 @@ public:
 				return m_corner_angles[i];
 			}
 		}
-		assert(0);
-		return 0;
+		throw std::runtime_error("Face::vertex_angle: vertex not found in face");
 	}
 
 	double* corner_angles(){return m_corner_angles;};
@@ -356,8 +356,7 @@ inline edge_pointer Face::opposite_edge(vertex_pointer v)
 			return e;
 		}
 	}
-	assert(0);
-	return nullptr;
+	throw std::runtime_error("Face::opposite_edge: vertex not found in face");
 }
 
 inline vertex_pointer Face::opposite_vertex(edge_pointer e)
@@ -370,8 +369,7 @@ inline vertex_pointer Face::opposite_vertex(edge_pointer e)
 			return v;
 		}
 	}
-	assert(0);
-	return nullptr;
+	throw std::runtime_error("Face::opposite_vertex: edge not found in face");
 }
 
 inline edge_pointer Face::next_edge(edge_pointer e, vertex_pointer v)
@@ -386,8 +384,7 @@ inline edge_pointer Face::next_edge(edge_pointer e, vertex_pointer v)
 			return next;
 		}
 	}
-	assert(0);
-	return nullptr;
+	throw std::runtime_error("Face::next_edge: edge or vertex not found in face");
 }
 
 struct HalfEdge			//prototype of the edge; used for mesh construction

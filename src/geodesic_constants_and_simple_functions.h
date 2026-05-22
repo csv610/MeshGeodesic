@@ -15,13 +15,16 @@ namespace geodesic{
 #define M_PI 3.14159265358979323846
 #endif
 
-//double const GEODESIC_INF = std::numeric_limits<double>::max();
-double const GEODESIC_INF = std::numeric_limits<double>::infinity();
+namespace Constants {
+	inline constexpr double GEODESIC_INF = std::numeric_limits<double>::infinity();
+	//in order to avoid numerical problems with "infinitely small" intervals,
+	//we drop all the intervals smaller than SMALLEST_INTERVAL_RATIO*edge_length
+	inline constexpr double SMALLEST_INTERVAL_RATIO = 1e-6;
+}
 
-//in order to avoid numerical problems with "infinitely small" intervals,
-//we drop all the intervals smaller than SMALLEST_INTERVAL_RATIO*edge_length
-double const SMALLEST_INTERVAL_RATIO = 1e-6;		
-//double const SMALL_EPSILON = 1e-10;
+// Global aliases for backward compatibility if needed, or just use the new ones
+inline constexpr double GEODESIC_INF = Constants::GEODESIC_INF;
+inline constexpr double SMALLEST_INTERVAL_RATIO = Constants::SMALLEST_INTERVAL_RATIO;
 
 
 inline double cos_from_edges(double const a,			//compute the cosine of the angle given the lengths of the edges
@@ -55,13 +58,13 @@ inline bool read_mesh_from_file(const char* filename,
 		return false;
 	}
 	
-	unsigned num_points;
+	std::size_t num_points;
 	if (!(file >> num_points) || num_points < 3) 
 	{
 		return false;
 	}
 
-	unsigned num_faces;
+	std::size_t num_faces;
 	if (!(file >> num_faces)) 
 	{
 		return false;

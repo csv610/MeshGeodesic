@@ -104,8 +104,7 @@ inline std::size_t Mesh::closest_vertices(SurfacePoint* p,
 		return 2 + edge->adjacent_faces().size();
 	}
 
-	assert(0);
-	return 0;
+	throw std::runtime_error("closest_vertices: undefined point type");
 }
 
 template<class Points, class Faces>
