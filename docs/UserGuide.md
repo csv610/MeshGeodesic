@@ -122,7 +122,7 @@ geodesic::SurfacePoint source(&mesh.vertices()[0]); // Starting point
 geodesic::SurfacePoint target(&mesh.vertices()[100]); // End point
 
 std::vector<geodesic::SurfacePoint> path;
-algorithm.geodesic(source, target, path); // Finds the path
+algorithm.compute_geodesic(source, target, path); // Finds the path
 
 // Calculate path length
 double length = 0;

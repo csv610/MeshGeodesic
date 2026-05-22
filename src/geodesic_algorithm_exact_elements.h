@@ -132,11 +132,11 @@ public:
 	edge_pointer& edge(){return m_edge;};
 	DirectionType& direction(){return m_direction;};
 	bool visible_from_source(){return m_direction == FROM_SOURCE;};
-	unsigned& source_index(){return m_source_index;};
+	std::size_t& source_index(){return m_source_index;};
 
 	void initialize(edge_pointer edge, 
-					SurfacePoint* point = NULL, 
-					unsigned source_index = 0);
+					SurfacePoint* point = nullptr, 
+					std::size_t source_index = 0);
 
 protected:
 	double m_start;						//initial point of the interval on the edge
@@ -147,7 +147,7 @@ protected:
 
 	interval_pointer m_next;			//pointer to the next interval in the list	
 	edge_pointer m_edge;				//edge that the interval belongs to
-	unsigned m_source_index;			//the source it belongs to
+	std::size_t m_source_index;			//the source it belongs to
 	DirectionType m_direction;			//where the interval is coming from
 };
 
@@ -162,18 +162,18 @@ protected:
 class IntervalList						//list of the of intervals of the given edge
 {
 public:
-	IntervalList(){m_first = NULL;};	
+	IntervalList(){m_first = nullptr;};	
 	~IntervalList(){};
 
 	void clear()
 	{
-		m_first = NULL;
+		m_first = nullptr;
 	};
 
 	void initialize(edge_pointer e)
 	{
 		m_edge = e;
-		m_first = NULL;
+		m_first = nullptr;
 	};
 
 	interval_pointer covering_interval(double offset)			//returns the interval that covers the offset
@@ -186,7 +186,7 @@ public:
 			p = p->next();
 		}
 
-		return p;// && p->start() <= offset ? p : NULL;
+		return p;// && p->start() <= offset ? p : nullptr;
 	};
 
 	void find_closest_point(SurfacePoint* point, 
@@ -196,7 +196,7 @@ public:
 	{
 		interval_pointer p = m_first; 
 		distance = GEODESIC_INF;
-		interval = NULL;
+		interval = nullptr;
 
 		double x,y;
 		m_edge->local_coordinates(point, x, y);
@@ -218,10 +218,10 @@ public:
 		}
 	};
 
-	unsigned number_of_intervals()
+	std::size_t number_of_intervals()
 	{
 		interval_pointer p = m_first; 
-		unsigned count = 0;
+		std::size_t count = 0;
 		while(p)
 		{
 			++count;
@@ -260,9 +260,9 @@ private:
 class SurfacePointWithIndex : public SurfacePoint
 {
 public:
-	unsigned index(){return m_index;};
+	std::size_t index(){return m_index;};
 
-	void initialize(SurfacePoint& p, unsigned index)
+	void initialize(SurfacePoint& p, std::size_t index)
 	{
 		SurfacePoint::initialize(p);
 		m_index = index;
@@ -283,7 +283,7 @@ public:
 	}
 
 private:
-	unsigned m_index;
+	std::size_t m_index;
 }; 
 
 class SortedSources : public std::vector<SurfacePointWithIndex>
@@ -308,7 +308,7 @@ public:
 	{
 		resize(sources.size());
 		m_sorted.resize(sources.size());
-		for(unsigned i=0; i<sources.size(); ++i)
+		for(std::size_t i=0; i<sources.size(); ++i)
 		{
 			SurfacePointWithIndex& p = *(begin() + i);
 
@@ -319,7 +319,7 @@ public:
 		std::sort(m_sorted.begin(), m_sorted.end(), m_compare_less);
 	};
 
-	SurfacePointWithIndex& operator[](unsigned i)
+	SurfacePointWithIndex& operator[](std::size_t i)
 	{
 		assert(i < size());
 		return *(begin() + i);
@@ -392,10 +392,10 @@ inline void Interval::find_closest_point(double const rs,
 
 inline void Interval::initialize(edge_pointer edge, 
 								 SurfacePoint* source,		
-								 unsigned source_index)
+								 std::size_t source_index)
 {
-	m_next = NULL;
-	//m_geodesic_previous = NULL;	
+	m_next = nullptr;
+	//m_geodesic_previous = nullptr;	
 	m_direction = UNDEFINED_DIRECTION;
 	m_edge = edge;
 	m_source_index = source_index;

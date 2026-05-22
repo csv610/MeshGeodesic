@@ -7,6 +7,8 @@
 
 #include <assert.h>
 #include <cstddef>
+#include <cmath>
+#include <algorithm>
 
 namespace geodesic{
 
@@ -28,24 +30,24 @@ class SimpleVector			//for efficiency, it uses an outside memory allocator
 public:
 	SimpleVector():
 	  m_size(0),
-	  m_begin(NULL)
+	  m_begin(nullptr)
 	{};
 
 	typedef Data* iterator;
 
-	unsigned size(){return m_size;};
+	std::size_t size(){return m_size;};
 	iterator begin(){return m_begin;};
 	iterator end(){return m_begin + m_size;};
 
 	template<class DataPointer>
-	void set_allocation(DataPointer begin, unsigned size)
+	void set_allocation(DataPointer begin, std::size_t size)
 	{
-		assert(begin != NULL || size == 0);
+		assert(begin != nullptr || size == 0);
 		m_size = size;
 		m_begin = (iterator)begin;
 	}
 
-	Data& operator[](unsigned i)
+	Data& operator[](std::size_t i)
 	{
 		assert(i < m_size);
 		return *(m_begin + i);
@@ -54,11 +56,11 @@ public:
 	void clear()
 	{
 		m_size = 0;
-		m_begin = NULL;
+		m_begin = nullptr;
 	}
 
 private:
-	unsigned m_size;
+	std::size_t m_size;
 	Data* m_begin;
 };
 
@@ -86,7 +88,7 @@ public:
 	edge_pointer_vector& adjacent_edges(){return m_adjacent_edges;};
 	face_pointer_vector& adjacent_faces(){return m_adjacent_faces;};
 
-	unsigned& id(){return m_id;}; 
+	std::size_t& id(){return m_id;}; 
 	PointType type(){return m_type;};
 
 protected:
@@ -94,7 +96,7 @@ protected:
 	edge_pointer_vector m_adjacent_edges;			//list of the adjacent edges
 	face_pointer_vector m_adjacent_faces;			//list of the adjacent faces
 
-	unsigned m_id;							//unique id
+	std::size_t m_id;							//unique id
 	PointType m_type;							//vertex, edge or face
 };
 
@@ -193,7 +195,7 @@ public:
 
 	double vertex_angle(vertex_pointer v)
 	{
-		for(unsigned i=0; i<3; ++i)
+		for(std::size_t i=0; i<3; ++i)
 		{
 			if(adjacent_vertices()[i]->id() == v->id())
 			{
@@ -227,7 +229,7 @@ public:
 		if(adjacent_faces().size() == 1)
 		{
 			assert(adjacent_faces()[0]->id() == f->id());
-			return NULL;
+			return nullptr;
 		}
 
 		assert(adjacent_faces()[0]->id() == f->id() || 
@@ -289,7 +291,7 @@ class SurfacePoint:public Point3D  //point on the surface of the mesh
 {
 public:
 	SurfacePoint():
-		m_p(NULL)
+		m_p(nullptr)
 	{};
 
 	SurfacePoint(vertex_pointer v):		//set the surface point in the vertex
@@ -346,7 +348,7 @@ protected:
 
 inline edge_pointer Face::opposite_edge(vertex_pointer v)
 {
-	for(unsigned i=0; i<3; ++i)
+	for(std::size_t i=0; i<3; ++i)
 	{
 		edge_pointer e = adjacent_edges()[i];
 		if(!e->belongs(v))
@@ -355,12 +357,12 @@ inline edge_pointer Face::opposite_edge(vertex_pointer v)
 		}
 	}
 	assert(0);
-	return NULL;
+	return nullptr;
 }
 
 inline vertex_pointer Face::opposite_vertex(edge_pointer e)
 {
-	for(unsigned i=0; i<3; ++i)
+	for(std::size_t i=0; i<3; ++i)
 	{
 		vertex_pointer v = adjacent_vertices()[i];
 		if(!e->belongs(v))
@@ -369,14 +371,14 @@ inline vertex_pointer Face::opposite_vertex(edge_pointer e)
 		}
 	}
 	assert(0);
-	return NULL;
+	return nullptr;
 }
 
 inline edge_pointer Face::next_edge(edge_pointer e, vertex_pointer v)
 {
 	assert(e->belongs(v));
 
-	for(unsigned i=0; i<3; ++i)
+	for(std::size_t i=0; i<3; ++i)
 	{
 		edge_pointer next = adjacent_edges()[i];
 		if(e->id() != next->id() && next->belongs(v))
@@ -385,14 +387,14 @@ inline edge_pointer Face::next_edge(edge_pointer e, vertex_pointer v)
 		}
 	}
 	assert(0);
-	return NULL;
+	return nullptr;
 }
 
 struct HalfEdge			//prototype of the edge; used for mesh construction
 {
-	unsigned face_id;
-	unsigned vertex_0;		//adjacent vertices sorted by id value
-	unsigned vertex_1;		//they are sorted, vertex_0 < vertex_1
+	std::size_t face_id;
+	std::size_t vertex_0;		//adjacent vertices sorted by id value
+	std::size_t vertex_1;		//they are sorted, vertex_0 < vertex_1
 };
 
 inline bool operator < (const HalfEdge &x, const HalfEdge &y)

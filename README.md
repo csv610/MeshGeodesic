@@ -1,61 +1,108 @@
 # MeshGeodesic
 
-A modernized C++20 port of the original Geodesic library for computing exact and approximate shortest paths on triangular meshes.
+[![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Overview
+A modernized, high-performance C++20 port of the original Geodesic library for computing exact and approximate shortest paths on triangular meshes.
 
-This project is a modernized port of the geodesic library originally developed by **Danil Kirsanov**. It provides efficient implementations of several geodesic algorithms, including:
+## 🚀 Overview
 
-*   **Exact Geodesic Algorithm**: The Mitchell-Mount-Papadimitriou (MMP) algorithm for exact shortest paths.
-*   **Dijkstra's Algorithm**: Fast vertex-to-vertex shortest paths.
-*   **Subdivision Algorithm**: An approximate algorithm with adjustable precision.
+**MeshGeodesic** provides efficient implementations of geodesic algorithms on discrete surfaces. It is based on the classic work of **Danil Kirsanov** and has been completely overhauled for modern C++ development.
 
-## Contributions & Modernization
+### Included Algorithms:
+*   **Exact Geodesic (MMP)**: Computes mathematically exact shortest paths using the Mitchell-Mount-Papadimitriou algorithm.
+*   **Dijkstra's Algorithm**: Rapid vertex-to-vertex shortest path estimation on the mesh graph.
+*   **Subdivision Algorithm**: A flexible approximation that balances speed and precision by virtually subdividing mesh edges.
 
-This fork introduces several significant improvements to the original codebase to align it with modern C++ standards and development practices:
+## ✨ Modernization Highlights
 
-1.  **C++20 Standardization**: The entire codebase has been updated and verified to compile under the C++20 standard.
-2.  **Modern Memory Management**: Replaced all instances of the deprecated `std::auto_ptr` with `std::unique_ptr`, ensuring better memory safety and compatibility with modern compilers.
-3.  **Safety & Robustness**:
-    *   Replaced unsafe `memcpy` operations on non-trivially copyable types with standard C++ object assignments, preventing potential memory corruption and object slicing.
-    *   Fixed ISO C++ warnings regarding the conversion of string literals to non-const `char*`.
-    *   Added `assert` and return safety to control paths in API functions.
-4.  **Modern Build System**: Added a comprehensive `CMakeLists.txt` for easy cross-platform compilation and dependency management.
-5.  **Project Organization**: Restructured the project for better clarity, moving example applications to the `app/` directory and separating headers/sources in `src/`.
-6.  **Unit Testing Suite**: Implemented a new automated testing suite using the `doctest` framework, covering mesh construction and geodesic distance verification.
-7.  **Benchmarking Tool**: Added a dedicated benchmarking utility to compare the performance and accuracy of different geodesic algorithms on realistic mesh data.
+This fork transforms the original 2008 codebase into a production-ready modern library:
 
-## Requirements
+*   **C++20 Standards**: Built from the ground up to support modern compilers and language features.
+*   **Memory Safety**: Replaced legacy `std::auto_ptr` with `std::unique_ptr` and eliminated unsafe memory operations.
+*   **Robust Architecture**: Surgical fixes for ISO C++ compliance, improved type safety, and better error handling.
+*   **Developer Friendly**: Modern CMake build system, comprehensive unit tests (`doctest`), and integrated benchmarking.
 
-*   A C++20 compatible compiler (e.g., GCC 10+, Clang 10+, MSVC 2019+)
-*   CMake 3.10 or higher
-*   Boost (Optional, required only for the MATLAB API)
+## 🛠 Quick Start
 
-## Building the Project
+### Installation
 
 ```bash
-mkdir build
-cd build
+git clone https://github.com/your-repo/MeshGeodesic.git
+cd MeshGeodesic
+mkdir build && cd build
 cmake ..
-make
+make -j
 ```
 
-### Running Tests
-After building, you can run the unit tests:
-```bash
-./test_geodesic
+### Basic Usage Example
+
+```cpp
+#include "geodesic_algorithm_exact.h"
+#include "geodesic_mesh.h"
+
+int main() {
+    std::vector<double> points;
+    std::vector<unsigned> faces;
+
+    // Load your mesh data
+    geodesic::read_mesh_from_file("mesh.txt", points, faces);
+
+    // Initialize the mesh
+    geodesic::Mesh mesh;
+    mesh.initialize_mesh_data(points, faces);
+
+    // Initialize the algorithm
+    geodesic::GeodesicAlgorithmExact algorithm(&mesh);
+
+    // Define source and target points
+    geodesic::SurfacePoint source(&mesh.vertices()[0]);
+    geodesic::SurfacePoint target(&mesh.vertices()[100]);
+
+    // Compute the shortest path
+    std::vector<geodesic::SurfacePoint> path;
+    algorithm.compute_geodesic(source, target, path);
+
+    // Calculate and print path length
+    double path_length = geodesic::length(path);
+    std::cout << "Path length: " << path_length << std::endl;
+    return 0;
+}
 ```
 
-### Running Benchmarks
-To compare algorithm performance:
-```bash
-./benchmark_geodesic
+## 📂 Data Format
+
+The library includes a simple text-based mesh loader. The expected format for `.txt` mesh files is:
+
+```text
+# Number of vertices and faces
+5 4
+
+# Vertices: x y z
+0.0 0.0 0.0
+1.0 0.0 0.0
+1.0 1.0 0.0
+0.0 1.0 0.0
+0.5 0.5 1.0
+
+# Faces: v1 v2 v3 (0-indexed)
+0 1 4
+1 2 4
+2 3 4
+3 0 4
 ```
 
-## Original Credits
+## 🧪 Testing & Benchmarking
 
-The original code was developed by **Danil Kirsanov** (2008) and was released under the MIT License.
+We maintain high code quality through rigorous testing:
 
-## License
+*   **Run Unit Tests**: `./test_geodesic`
+*   **Run Benchmarks**: `./benchmark_geodesic`
 
-This project is licensed under the MIT License - see the original headers for details.
+Detailed documentation on algorithms and API usage can be found in the [User Guide](docs/UserGuide.md).
+
+## 📜 Credits & License
+
+*   **Original Author**: Danil Kirsanov (2008)
+*   **Modern Port**: Managed by the MeshGeodesic contributors.
+*   **License**: This project is licensed under the **MIT License**. See the `LICENSE` file or source headers for details.

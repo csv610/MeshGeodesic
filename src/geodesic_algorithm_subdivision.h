@@ -20,26 +20,26 @@ public:
 	SubdivisionNode(Pointer p):
 		SurfacePoint(p),
 		m_distance(0.0),
-		m_previous(NULL)
+		m_previous(nullptr)
 	{};
 
 	template <class Pointer, class Parameter>
 	SubdivisionNode(Pointer p, Parameter param):
 		SurfacePoint(p, param),
 		m_distance(0.0),
-		m_previous(NULL)
+		m_previous(nullptr)
 	{};
 
 	~SubdivisionNode(){};
 
 	double& distance_from_source(){return m_distance;};
 	node_pointer& previous(){return m_previous;};
-	unsigned& source_index(){return m_source_index;};
+	std::size_t& source_index(){return m_source_index;};
 
 	void clear()
 	{
 		m_distance = GEODESIC_INF;
-		m_previous = NULL;
+		m_previous = nullptr;
 	}
 
 	bool operator()(node_pointer const s1, node_pointer const s2) const
@@ -52,14 +52,7 @@ public:
 		{
 			return s1->distance_from_source() < s2->distance_from_source();
 		}
-/*		if(s1->type() != s2->type())
-		{
-			return s1->type() < s2->type();
-		}
-		if(s1->base_element()->id() != s2->base_element()->id())
-		{
-		    return s1->base_element()->id() < s2->base_element()->id();
-		} */
+
 		if(s1->x() != s2->x())		//two nodes cannot be located in the same space 
 		{
 			return s1->x() < s2->x();
@@ -81,7 +74,7 @@ public:
 
 private: 
 	double m_distance;					//distance to the closest source
-	unsigned m_source_index;			//closest source index
+	std::size_t m_source_index;			//closest source index
 	node_pointer m_previous;			//previous node in the geodesic path
 };
 
@@ -89,14 +82,14 @@ class GeodesicAlgorithmSubdivision: public GeodesicAlgorithmGraphBase<Subdivisio
 {
 	typedef SubdivisionNode Node;
 public:
-	GeodesicAlgorithmSubdivision(geodesic::Mesh* mesh = NULL, 
-								 unsigned subdivision_level = 0):
+	GeodesicAlgorithmSubdivision(geodesic::Mesh* mesh = nullptr, 
+								 std::size_t subdivision_level = 0):
 		GeodesicAlgorithmGraphBase<Node>(mesh)
 	{
 		m_type = SUBDIVISION;
 
 		m_nodes.reserve(mesh->vertices().size());
-		for(unsigned i=0; i<mesh->vertices().size(); ++i)
+		for(std::size_t i=0; i<mesh->vertices().size(); ++i)
 		{
 			vertex_pointer v = &mesh->vertices()[i];
 			m_nodes.push_back(Node(v));		//!!
@@ -107,9 +100,9 @@ public:
 
 	~GeodesicAlgorithmSubdivision(){};
 
-	unsigned subdivision_level(){return m_subdivision_level;};
+	std::size_t subdivision_level(){return m_subdivision_level;};
 
-	void set_subdivision_level(unsigned subdivision_level)
+	void set_subdivision_level(std::size_t subdivision_level)
 	{
 		m_subdivision_level = subdivision_level;
 
@@ -117,10 +110,10 @@ public:
 		m_nodes.reserve(m_mesh->vertices().size() + 
 						m_mesh->edges().size()*subdivision_level);
 
-		for(unsigned i=0; i<m_mesh->edges().size(); ++i)
+		for(std::size_t i=0; i<m_mesh->edges().size(); ++i)
 		{
 			edge_pointer e = &m_mesh->edges()[i];
-			for(unsigned i=0; i<subdivision_level; ++i)
+			for(std::size_t i=0; i<subdivision_level; ++i)
 			{
 				double offset = (double)(i+1)/(double)(subdivision_level+1);
 				m_nodes.push_back(Node(e, offset));
@@ -130,14 +123,14 @@ public:
 
 protected:
 	void list_nodes_visible_from_source(MeshElementBase* p, 
-										std::vector<node_pointer>& storage);		//list all nodes that belong to this mesh element
+										std::vector<node_pointer>& storage) override;		//list all nodes that belong to this mesh element
 
 	void list_nodes_visible_from_node(node_pointer node,			//list all nodes that belong to this mesh element
 									  std::vector<node_pointer>& storage,
 									  std::vector<double>& distances, 
-									  double threshold_distance);	//list only the nodes whose current distance is larger than the threshold
+									  double threshold_distance) override;	//list only the nodes whose current distance is larger than the threshold
 	
-	unsigned node_indexx(edge_pointer e)
+	std::size_t node_indexx(edge_pointer e)
 	{
 		return e->id()*m_subdivision_level + m_mesh->vertices().size();
 	};
@@ -147,7 +140,7 @@ private:
 					std::vector<node_pointer>& storage,
 					double threshold_distance = -1.0);				//list only the nodes whose current distance is larger than the threshold
 
-	unsigned m_subdivision_level;	//when level is equal to 1, this algorithm corresponds to the Dijkstra algorithm
+	std::size_t m_subdivision_level;	//when level is equal to 1, this algorithm corresponds to the Dijkstra algorithm
 };
 
 inline void GeodesicAlgorithmSubdivision::list_nodes(MeshElementBase* p,
@@ -168,8 +161,8 @@ inline void GeodesicAlgorithmSubdivision::list_nodes(MeshElementBase* p,
 	else if(p->type() == EDGE)
 	{
 		edge_pointer e = static_cast<edge_pointer>(p);
-		unsigned node_index = node_indexx(e);
-		for(unsigned i=0; i<m_subdivision_level; ++i)
+		std::size_t node_index = node_indexx(e);
+		for(std::size_t i=0; i<m_subdivision_level; ++i)
 		{
 			node_pointer node = &m_nodes[node_index++];
 			if(node->distance_from_source() > threshold_distance)
@@ -181,7 +174,7 @@ inline void GeodesicAlgorithmSubdivision::list_nodes(MeshElementBase* p,
 	//FACE has no nodes
 }
 
-void GeodesicAlgorithmSubdivision::list_nodes_visible_from_source(MeshElementBase* p,
+inline void GeodesicAlgorithmSubdivision::list_nodes_visible_from_source(MeshElementBase* p,
 																  std::vector<node_pointer>& storage)
 {
 	assert(p->type() != UNDEFINED_POINT);
@@ -189,7 +182,7 @@ void GeodesicAlgorithmSubdivision::list_nodes_visible_from_source(MeshElementBas
 	if(p->type() == FACE)
 	{
 		face_pointer f = static_cast<face_pointer>(p);
-		for(unsigned i=0; i<3; ++i)
+		for(std::size_t i=0; i<3; ++i)
 		{
 			list_nodes(f->adjacent_vertices()[i],storage);
 			list_nodes(f->adjacent_edges()[i],storage);
@@ -207,7 +200,7 @@ void GeodesicAlgorithmSubdivision::list_nodes_visible_from_source(MeshElementBas
 	}
 }
 
-void GeodesicAlgorithmSubdivision::list_nodes_visible_from_node(node_pointer node, //list all nodes that belong to this mesh element
+inline void GeodesicAlgorithmSubdivision::list_nodes_visible_from_node(node_pointer node, //list all nodes that belong to this mesh element
 																std::vector<node_pointer>& storage,
 																std::vector<double>& distances,
 																double threshold_distance)
@@ -220,14 +213,14 @@ void GeodesicAlgorithmSubdivision::list_nodes_visible_from_node(node_pointer nod
 	{
 		vertex_pointer v = static_cast<vertex_pointer>(p);
 
-		for(unsigned i=0; i<v->adjacent_edges().size(); ++i)
+		for(std::size_t i=0; i<v->adjacent_edges().size(); ++i)
 		{
 			edge_pointer e = v->adjacent_edges()[i];
 			vertex_pointer v_opposite = e->opposite_vertex(v);
 			list_nodes(e, storage, threshold_distance);
 			list_nodes(v_opposite, storage, threshold_distance);
 		}
-		for(unsigned i=0; i<v->adjacent_faces().size(); ++i)
+		for(std::size_t i=0; i<v->adjacent_faces().size(); ++i)
 		{
 			face_pointer f = v->adjacent_faces()[i];
 			edge_pointer e = f->opposite_edge(v);
@@ -243,7 +236,7 @@ void GeodesicAlgorithmSubdivision::list_nodes_visible_from_node(node_pointer nod
 		list_nodes(v0, storage, threshold_distance);
 		list_nodes(v1, storage, threshold_distance);
 
-		for(unsigned i=0; i<e->adjacent_faces().size(); ++i)
+		for(std::size_t i=0; i<e->adjacent_faces().size(); ++i)
 		{
 			face_pointer f = e->adjacent_faces()[i];
 
@@ -257,7 +250,7 @@ void GeodesicAlgorithmSubdivision::list_nodes_visible_from_node(node_pointer nod
 		assert(0);
 	}
 
-	unsigned index = distances.size();
+	std::size_t index = distances.size();
 	distances.resize(storage.size());
 	for(; index<storage.size(); ++index)
 	{	

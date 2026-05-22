@@ -23,15 +23,15 @@ public:
 
 	void propagate(std::vector<SurfacePoint>& sources,
    				   double max_propagation_distance = GEODESIC_INF,			//propagation algorithm stops after reaching the certain distance from the source
-				   std::vector<SurfacePoint>* stop_points = NULL); //or after ensuring that all the stop_points are covered
+				   std::vector<SurfacePoint>* stop_points = nullptr) override; //or after ensuring that all the stop_points are covered
 
 	void trace_back(SurfacePoint& destination,		//trace back piecewise-linear path
-		std::vector<SurfacePoint>& path);
+		std::vector<SurfacePoint>& path) override;
 
-	unsigned best_source(SurfacePoint& point,			//quickly find what source this point belongs to and what is the distance to this source
-							double& best_source_distance); 
+	std::size_t best_source(SurfacePoint& point,			//quickly find what source this point belongs to and what is the distance to this source
+							double& best_source_distance) override; 
 
-	void print_statistics()
+	void print_statistics() override
 	{
 		GeodesicAlgorithmBase::print_statistics();
 
@@ -40,7 +40,7 @@ public:
 	}
 
 protected:
-	unsigned node_index(vertex_pointer v)		//gives index of the node that corresponds to this vertex
+	std::size_t node_index(vertex_pointer v)		//gives index of the node that corresponds to this vertex
 	{
 		return v->id();
 	};
@@ -52,7 +52,7 @@ protected:
 
 	node_pointer best_first_node(SurfacePoint& point, double& best_total_distance)
 	{
-		node_pointer best_node = NULL;	
+		node_pointer best_node = nullptr;	
 		if(point.type() == VERTEX)		
 		{
 			vertex_pointer v = (vertex_pointer)point.base_element();
@@ -65,7 +65,7 @@ protected:
 			list_nodes_visible_from_source(point.base_element(), possible_nodes);
 
 			best_total_distance = GEODESIC_INF;
-			for(unsigned i=0; i<possible_nodes.size(); ++i)
+			for(std::size_t i=0; i<possible_nodes.size(); ++i)
 			{
 				node_pointer node = possible_nodes[i];
 
@@ -78,12 +78,10 @@ protected:
 			}
 		}
 
-		//assert(best_node);
-		//assert(best_total_distance<GEODESIC_INF);
 		if(best_total_distance > m_propagation_distance_stopped)		//result is unreliable
 		{
 			best_total_distance = GEODESIC_INF;
-			return NULL;
+			return nullptr;
 		}
 		else
 		{
@@ -91,7 +89,7 @@ protected:
 		}
 	};	//quickly find what node will be the next one in geodesic path
 
-	bool check_stop_conditions(unsigned& index);		//check when propagation should stop
+	bool check_stop_conditions(std::size_t& index);		//check when propagation should stop
 
 	virtual void list_nodes_visible_from_source(MeshElementBase* p, 
 												std::vector<node_pointer>& storage) = 0;		//list all nodes that belong to this mesh element
@@ -119,7 +117,7 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(std::vector<SurfacePoint>& sour
 	
 	m_queue.clear();
 	m_propagation_distance_stopped = GEODESIC_INF;
-	for(unsigned i=0; i<m_nodes.size(); ++i)
+	for(std::size_t i=0; i<m_nodes.size(); ++i)
 	{
 		m_nodes[i].clear();
 	}
@@ -127,13 +125,13 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(std::vector<SurfacePoint>& sour
 	clock_t start = clock();
 
 	std::vector<node_pointer> visible_nodes;		//initialize vertices directly visible from sources
-	for(unsigned i=0; i<m_sources.size(); ++i)
+	for(std::size_t i=0; i<m_sources.size(); ++i)
 	{
 		SurfacePoint* source = &m_sources[i];
 		list_nodes_visible_from_source(source->base_element(), 
 									   visible_nodes);			
 
-		for(unsigned j=0; j<visible_nodes.size(); ++j)
+		for(std::size_t j=0; j<visible_nodes.size(); ++j)
 		{
 			node_pointer node = visible_nodes[j];
 			double distance = node->distance(source);
@@ -141,13 +139,13 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(std::vector<SurfacePoint>& sour
 			{
 				node->distance_from_source() = distance;
 				node->source_index() = i;
-				node->previous() = NULL;
+				node->previous() = nullptr;
 			}
 		}
 		visible_nodes.clear();
 	}
 
-	for(unsigned i=0; i<m_nodes.size(); ++i)		//initialize the queue
+	for(std::size_t i=0; i<m_nodes.size(); ++i)		//initialize the queue
 	{
 		if(m_nodes[i].distance_from_source() < GEODESIC_INF)
 		{
@@ -155,8 +153,8 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(std::vector<SurfacePoint>& sour
 		}
 	}
 
-	unsigned counter = 0;
-	unsigned satisfied_index = 0;
+	std::size_t counter = 0;
+	std::size_t satisfied_index = 0;
 	
 	std::vector<double> distances_between_nodes;
 	while(!m_queue.empty())					//main cycle
@@ -180,7 +178,7 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(std::vector<SurfacePoint>& sour
 									 distances_between_nodes, 
 									 min_node->distance_from_source());
 
-		for(unsigned i=0; i<visible_nodes.size(); ++i)		//update all the adgecent vertices
+		for(std::size_t i=0; i<visible_nodes.size(); ++i)		//update all the adgecent vertices
 		{
 			node_pointer next_node = visible_nodes[i];
 
@@ -205,11 +203,10 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(std::vector<SurfacePoint>& sour
 	m_propagation_distance_stopped = m_queue.empty() ? GEODESIC_INF : (*m_queue.begin())->distance_from_source();
 	clock_t finish = clock();
 	m_time_consumed = (static_cast<double>(finish)-static_cast<double>(start))/CLOCKS_PER_SEC;
-	//std::cout << std::endl;
 }
 
 template<class Node>
-inline bool GeodesicAlgorithmGraphBase<Node>::check_stop_conditions(unsigned& index)
+inline bool GeodesicAlgorithmGraphBase<Node>::check_stop_conditions(std::size_t& index)
 {
 	double queue_min_distance = (*m_queue.begin())->distance_from_source();
 
@@ -267,7 +264,7 @@ inline void GeodesicAlgorithmGraphBase<Node>::trace_back(SurfacePoint& destinati
 
 
 template<class Node>
-inline unsigned GeodesicAlgorithmGraphBase<Node>::best_source(SurfacePoint& point,			//quickly find what source this point belongs to and what is the distance to this source
+inline std::size_t GeodesicAlgorithmGraphBase<Node>::best_source(SurfacePoint& point,			//quickly find what source this point belongs to and what is the distance to this source
 																 double& best_source_distance)
 {
 	node_pointer node = best_first_node(point, best_source_distance);

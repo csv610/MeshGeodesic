@@ -19,13 +19,13 @@ public:
 
 	double& distance_from_source(){return m_distance;};
 	node_pointer& previous(){return m_previous;};
-	unsigned& source_index(){return m_source_index;};
+	std::size_t& source_index(){return m_source_index;};
 	vertex_pointer& vertex(){return m_vertex;};
 
 	void clear()
 	{
 		m_distance = GEODESIC_INF;
-		m_previous = NULL;
+		m_previous = nullptr;
 	}
 
 	bool operator()(node_pointer const s1, node_pointer const s2) const
@@ -47,7 +47,7 @@ public:
 
 private: 
 	double m_distance;					//distance to the closest source
-	unsigned m_source_index;			//closest source index
+	std::size_t m_source_index;			//closest source index
 	node_pointer m_previous;			//previous node in the geodesic path
 	vertex_pointer m_vertex;			//correspoding vertex
 };
@@ -64,7 +64,7 @@ public:
 		m_type = DIJKSTRA;
 
 		m_nodes.resize(mesh->vertices().size());
-		for(unsigned i=0; i<m_nodes.size(); ++i)
+		for(std::size_t i=0; i<m_nodes.size(); ++i)
 		{
 			m_nodes[i].vertex() = &m_mesh->vertices()[i];
 		}
@@ -75,15 +75,15 @@ public:
 protected:
 
 	void list_nodes_visible_from_source(MeshElementBase* p, 
-										std::vector<node_pointer>& storage);		//list all nodes that belong to this mesh element
+										std::vector<node_pointer>& storage) override;		//list all nodes that belong to this mesh element
 
 	void list_nodes_visible_from_node(node_pointer node,			//list all nodes that belong to this mesh element
 									  std::vector<node_pointer>& storage,
 									  std::vector<double>& distances, 
-									  double threshold_distance);	//list only the nodes whose current distance is larger than the threshold
+									  double threshold_distance) override;	//list only the nodes whose current distance is larger than the threshold
 };
 
-void GeodesicAlgorithmDijkstra::list_nodes_visible_from_source(MeshElementBase* p,
+inline void GeodesicAlgorithmDijkstra::list_nodes_visible_from_source(MeshElementBase* p,
 															   std::vector<node_pointer>& storage)
 {
 	assert(p->type() != UNDEFINED_POINT);
@@ -91,7 +91,7 @@ void GeodesicAlgorithmDijkstra::list_nodes_visible_from_source(MeshElementBase* 
 	if(p->type() == FACE)
 	{
 		face_pointer f = static_cast<face_pointer>(p);
-		for(unsigned i=0; i<3; ++i)
+		for(std::size_t i=0; i<3; ++i)
 		{
 			vertex_pointer v = f->adjacent_vertices()[i];
 			storage.push_back(&m_nodes[node_index(v)]);
@@ -100,7 +100,7 @@ void GeodesicAlgorithmDijkstra::list_nodes_visible_from_source(MeshElementBase* 
 	else if(p->type() == EDGE)
 	{
 		edge_pointer e = static_cast<edge_pointer>(p);
-		for(unsigned i=0; i<2; ++i)
+		for(std::size_t i=0; i<2; ++i)
 		{
 			vertex_pointer v = e->adjacent_vertices()[i];
 			storage.push_back(&m_nodes[node_index(v)]);
@@ -121,7 +121,7 @@ inline void GeodesicAlgorithmDijkstra::list_nodes_visible_from_node(node_pointer
 	vertex_pointer v = node->vertex();
 	assert(storage.size() == distances.size());
 
-	for(unsigned i=0; i<v->adjacent_edges().size(); ++i)
+	for(std::size_t i=0; i<v->adjacent_edges().size(); ++i)
 	{
 		edge_pointer e = v->adjacent_edges()[i];
 		vertex_pointer new_v = e->opposite_vertex(v);

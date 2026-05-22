@@ -16,7 +16,7 @@ namespace geodesic{
 #endif
 
 //double const GEODESIC_INF = std::numeric_limits<double>::max();
-double const GEODESIC_INF = 1e100;
+double const GEODESIC_INF = std::numeric_limits<double>::infinity();
 
 //in order to avoid numerical problems with "infinitely small" intervals,
 //we drop all the intervals smaller than SMALLEST_INTERVAL_RATIO*edge_length
@@ -50,26 +50,39 @@ inline bool read_mesh_from_file(const char* filename,
 								Faces& faces)
 {
 	std::ifstream file(filename);
-	assert(file.is_open());
-	if(!file.is_open()) return false;
+	if(!file.is_open()) 
+	{
+		return false;
+	}
 	
 	unsigned num_points;
-	file >> num_points;
-	assert(num_points>=3);
+	if (!(file >> num_points) || num_points < 3) 
+	{
+		return false;
+	}
 
 	unsigned num_faces;
-	file >> num_faces;
+	if (!(file >> num_faces)) 
+	{
+		return false;
+	}
 
 	points.resize(num_points*3);
 	for(typename Points::iterator i=points.begin(); i!=points.end(); ++i)
 	{
-		file >> *i;
+		if (!(file >> *i)) 
+		{
+			return false;
+		}
 	}
 
 	faces.resize(num_faces*3);
 	for(typename Faces::iterator i=faces.begin(); i!=faces.end(); ++i)
 	{
-		file >> *i;
+		if (!(file >> *i)) 
+		{
+			return false;
+		}
 	}
 	file.close();
 

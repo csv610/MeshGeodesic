@@ -23,7 +23,7 @@ public:
 
 	GeodesicAlgorithmBase(geodesic::Mesh* mesh):
 		m_type(UNDEFINED_ALGORITHM),
-		m_max_propagation_distance(1e100),
+		m_max_propagation_distance(GEODESIC_INF),
 		m_mesh(mesh)
 	{};	
 
@@ -31,20 +31,20 @@ public:
 
 	virtual void propagate(std::vector<SurfacePoint>& sources,
    						   double max_propagation_distance = GEODESIC_INF,			//propagation algorithm stops after reaching the certain distance from the source
-						   std::vector<SurfacePoint>* stop_points = NULL) = 0; //or after ensuring that all the stop_points are covered
+						   std::vector<SurfacePoint>* stop_points = nullptr) = 0; //or after ensuring that all the stop_points are covered
 
 	virtual void trace_back(SurfacePoint& destination,		//trace back piecewise-linear path
 							std::vector<SurfacePoint>& path) = 0;
 
-	void geodesic(SurfacePoint& source,
+	void compute_geodesic(SurfacePoint& source,
 						  SurfacePoint& destination,
-						  std::vector<SurfacePoint>& path); //lazy people can find geodesic path with one function call
+						  std::vector<SurfacePoint>& path); 
 
-	void geodesic(std::vector<SurfacePoint>& sources,
+	void compute_geodesic(std::vector<SurfacePoint>& sources,
 						  std::vector<SurfacePoint>& destinations,
-						  std::vector<std::vector<SurfacePoint> >& paths); //lazy people can find geodesic paths with one function call
+						  std::vector<std::vector<SurfacePoint> >& paths); 
 
-	virtual unsigned best_source(SurfacePoint& point,			//after propagation step is done, quickly find what source this point belongs to and what is the distance to this source
+	virtual std::size_t best_source(SurfacePoint& point,			//after propagation step is done, quickly find what source this point belongs to and what is the distance to this source
 								 double& best_source_distance) = 0; 
 
 	virtual void print_statistics()		//print info about timing and memory usage in the propagation step of the algorithm
@@ -83,7 +83,7 @@ inline double length(std::vector<SurfacePoint>& path)
 	double length = 0;
 	if(!path.empty())
 	{
-		for(unsigned i=0; i<path.size()-1; ++i)
+		for(std::size_t i=0; i<path.size()-1; ++i)
 		{
 			length += path[i].distance(&path[i+1]);
 		}
@@ -114,9 +114,9 @@ inline std::string GeodesicAlgorithmBase::name()
 	}
 }
 
-inline void GeodesicAlgorithmBase::geodesic(SurfacePoint& source,
+inline void GeodesicAlgorithmBase::compute_geodesic(SurfacePoint& source,
 											SurfacePoint& destination,
-											std::vector<SurfacePoint>& path) //lazy people can find geodesic path with one function call
+											std::vector<SurfacePoint>& path) 
 {
 	std::vector<SurfacePoint> sources(1, source);
 	std::vector<SurfacePoint> stop_points(1, destination);
@@ -129,9 +129,9 @@ inline void GeodesicAlgorithmBase::geodesic(SurfacePoint& source,
 	trace_back(destination, path);
 }
 
-inline void GeodesicAlgorithmBase::geodesic(std::vector<SurfacePoint>& sources,
+inline void GeodesicAlgorithmBase::compute_geodesic(std::vector<SurfacePoint>& sources,
 											std::vector<SurfacePoint>& destinations,
-											std::vector<std::vector<SurfacePoint> >& paths) //lazy people can find geodesic paths with one function call
+											std::vector<std::vector<SurfacePoint> >& paths) 
 {
 	double const max_propagation_distance = GEODESIC_INF;
 
@@ -141,7 +141,7 @@ inline void GeodesicAlgorithmBase::geodesic(std::vector<SurfacePoint>& sources,
 
 	paths.resize(destinations.size());
 
-	for(unsigned i=0; i<paths.size(); ++i)
+	for(std::size_t i=0; i<paths.size(); ++i)
 	{
 		trace_back(destinations[i], paths[i]);
 	}
@@ -161,16 +161,16 @@ inline void GeodesicAlgorithmBase::set_stop_conditions(std::vector<SurfacePoint>
 	m_stop_vertices.resize(stop_points->size());
 
 	std::vector<vertex_pointer> possible_vertices;
-	for(unsigned i = 0; i < stop_points->size(); ++i)
+	for(std::size_t i = 0; i < stop_points->size(); ++i)
 	{
 		SurfacePoint* point = &(*stop_points)[i];
 
 		possible_vertices.clear();
 		m_mesh->closest_vertices(point, &possible_vertices);
 		
-		vertex_pointer closest_vertex = NULL;
-		double min_distance = 1e100;
-		for(unsigned j = 0; j < possible_vertices.size(); ++j)
+		vertex_pointer closest_vertex = nullptr;
+		double min_distance = GEODESIC_INF;
+		for(std::size_t j = 0; j < possible_vertices.size(); ++j)
 		{
 			double distance = point->distance(possible_vertices[j]);
 			if(distance < min_distance)

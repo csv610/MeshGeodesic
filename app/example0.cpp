@@ -33,22 +33,50 @@ int main(int argc, char **argv)
 
 	geodesic::GeodesicAlgorithmExact algorithm(&mesh);	//create exact algorithm for the mesh
 
-	unsigned source_vertex_index = (argc == 2) ? 0 : atol(argv[2]);
+	unsigned source_vertex_index = 0;
+	if (argc > 2)
+	{
+		try {
+			source_vertex_index = std::stoul(argv[2]);
+		} catch (const std::exception& e) {
+			std::cerr << "Error: invalid source vertex index '" << argv[2] << "'" << std::endl;
+			return 1;
+		}
+	}
+
+	if (source_vertex_index >= mesh.vertices().size())
+	{
+		std::cerr << "Error: source vertex index out of bounds" << std::endl;
+		return 1;
+	}
 
 	geodesic::SurfacePoint source(&mesh.vertices()[source_vertex_index]);		//create source 
 	std::vector<geodesic::SurfacePoint> all_sources(1,source);					//in general, there could be multiple sources, but now we have only one
 
 	if(argc > 3)	//target vertex specified, compute single path
 	{
-		unsigned target_vertex_index = atol(argv[3]);
+		unsigned target_vertex_index = 0;
+		try {
+			target_vertex_index = std::stoul(argv[3]);
+		} catch (const std::exception& e) {
+			std::cerr << "Error: invalid target vertex index '" << argv[3] << "'" << std::endl;
+			return 1;
+		}
+
+		if (target_vertex_index >= mesh.vertices().size())
+		{
+			std::cerr << "Error: target vertex index out of bounds" << std::endl;
+			return 1;
+		}
+
 		geodesic::SurfacePoint target(&mesh.vertices()[target_vertex_index]);		//create source 
 
 		std::vector<geodesic::SurfacePoint> path;	//geodesic path is a sequence of SurfacePoints
 
-		bool const lazy_people_flag = false;		//there are two ways to do exactly the same
-		if(lazy_people_flag)
+		bool const use_direct_api = false;		//there are two ways to do exactly the same
+		if(use_direct_api)
 		{
-			algorithm.geodesic(source, target, path); //find a single source-target path
+			algorithm.compute_geodesic(source, target, path); //find a single source-target path
 		}
 		else		//doing the same thing explicitly for educational reasons
 		{

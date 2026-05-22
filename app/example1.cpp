@@ -60,7 +60,7 @@ int main(int /* argc */, char** /* argv */)
 		{
 			geodesic::SurfacePoint p(&mesh.vertices()[i]);
 			double distance;
-			unsigned best_source = algorithm->best_source(p,distance);
+			std::size_t best_source = algorithm->best_source(p,distance);
 
 			max_distance[best_source] = std::max(max_distance[best_source], distance);
 		}
